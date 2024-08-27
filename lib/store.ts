@@ -4,6 +4,22 @@ import { persist } from 'zustand/middleware'
 
 export type Status = 'TODO' | 'IN_PROGRESS' | 'DONE'
 
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+};
+export type UserState = {
+  users: User[];
+  currentUserId: string | null;
+};
+
+export type UserActions = {
+  addUser: (name: string, email: string) => void;
+  removeUser: (id: string) => void;
+  setCurrentUser: (id: string | null) => void;
+};
+
 export type Task = {
   id: string
   title: string
@@ -50,3 +66,26 @@ export const useTaskStore = create<State & Actions>()(
     { name: 'task-store', skipHydration: true }
   )
 )
+
+
+export const useUserStore = create<UserState & UserActions>()(
+  persist(
+    set => ({
+      users: [],
+      currentUserId: null,
+      addUser: (name: string, email: string) =>
+        set(state => ({
+          users: [
+            ...state.users,
+            { id: uuid(), name, email }
+          ]
+        })),
+      removeUser: (id: string) =>
+        set(state => ({
+          users: state.users.filter(user => user.id !== id)
+        })),
+      setCurrentUser: (id: string | null) => set({ currentUserId: id })
+    }),
+    { name: 'user-store', skipHydration: true }
+  )
+);
